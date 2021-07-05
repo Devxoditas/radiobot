@@ -1,0 +1,4 @@
+node_modules/
+songs/
+playlist.m3u
+.envrc
