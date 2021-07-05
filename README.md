@@ -30,7 +30,7 @@ Using this command, you can add specific songs using url from youtube/youtube-mu
 Or you can send a search query and the bot will try to get that song for you.
 
 ## Starting the stream
-Once music is added, just sen `/startstream` to start the streaming. Songs will play in order 
+Once music is added, just send `/startstream` to start the streaming. Songs will play in order 
 And will repeat the whole playlist once it finishes playing.
 
 ## Stop streaming
