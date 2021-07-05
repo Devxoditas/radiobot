@@ -21,8 +21,8 @@ elBot.setStream(liveStream)
 
 
 liveStream.nextSong = () => {
-  console.log('[INFO]Skipping song')
   liveStream.Stream.kill('SIGUSR1')
+  console.log('[INFO]Skipping song')
 }
 
 const parseCommand = (ctx, cb) => {
