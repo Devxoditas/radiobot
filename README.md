@@ -19,7 +19,8 @@ Bot commands include `/skipsong`, `/addsong`, `/flush`, `/startstream` and `/sto
 Create a `.envrc` file using `example.envrc` as guide
 
 ## Starting the service
-Once configured, just start the service and head to your telegram bot
+Once configured, just start the service ()`node index.js`) and head to your 
+telegram bot
 
 Initially it will not stream anything to icecast, you need to add songs first
 
