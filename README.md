@@ -8,7 +8,7 @@ Songs are automatically added to playlist using youtube-dl
 
 Bot commands include `/skipsong`, `/addsong`, `/flush`, `/startstream` and `/stop`
 
-## Requeriments
+## Requirements
 - Ezstream
 - Youtube-dl
 - Icecast server credentials
