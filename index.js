@@ -1,3 +1,4 @@
+require('./logger')
 const icyStreamer = require('icy-streamer')
 const { Telegraf } = require('telegraf')
 const elBot = require('./bot')

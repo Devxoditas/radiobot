@@ -9,7 +9,8 @@ const directory = `${__dirname}/songs/`
 const isCacheSong = id => {
   try {
     return fs.existsSync(`${directory}${id}`)
-  } catch (_) {
+  } catch (err) {
+    console.eeror(err)
     return false
   }
 }
@@ -19,7 +20,9 @@ const getSong = async url => {
   if (!youtubeId) {
     const songs = await ytMusic.searchMusics(url)
     if (!songs.length) {
-      return Promise.reject('Error: could not find song')
+      const errMsg = 'Error: could not find song'
+      console.error(errMsg)
+      return Promise.reject(errMsg)
     }
     youtubeId = songs[0].youtubeId
   }
@@ -36,10 +39,14 @@ const getSong = async url => {
     })
     yt.download(youtubeId, songFn)
     yt.on('finished', (err, response) => {
-      if (err) return reject(err)
+      if (err) {
+        console.error(err)
+        return reject(err)
+      }
       resolve(`${directory}${songFn}`)
     })
     yt.on('error', _ => {
+      console.error(_)
       reject('Cannot adquire song')
     })
   })
