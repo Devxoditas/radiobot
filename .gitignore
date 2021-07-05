@@ -1,4 +1,5 @@
 node_modules/
 songs/
 playlist.m3u
+ezstream-conf.xml
 .envrc
