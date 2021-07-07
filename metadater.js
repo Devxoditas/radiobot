@@ -11,7 +11,7 @@ const metadater = async file => {
     ffmetadata.write(
       fullPath,
       {
-        artist: info.videoDetails.author.name,
+        artist: info.videoDetails.author.name.replace(' - Topic', ''),
         title: info.videoDetails.title
       },
       {
@@ -27,7 +27,7 @@ const metadater = async file => {
 
 if (require.main === module) {
   const [,, song] = process.argv
-  getSong(song)
+  metadater(song)
 } else {
   module.exports = metadater
 }
