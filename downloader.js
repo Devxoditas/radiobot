@@ -3,6 +3,7 @@ const Ytmp3 = require('youtube-mp3-downloader')
 const Url = require('url')
 const qs = require('querystring')
 const fs = require('fs')
+const metadater = require('./metadater')
 
 const directory = `${__dirname}/songs/`
 
@@ -43,7 +44,9 @@ const getSong = async url => {
         console.error(err)
         return reject(err)
       }
-      resolve(`${directory}${songFn}`)
+      metadater(`${directory}${songFn}`).then(_ => {
+        resolve(`${directory}${songFn}`)
+      })
     })
     yt.on('error', _ => {
       console.error(_)

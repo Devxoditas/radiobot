@@ -1,6 +1,5 @@
-require('./logger')
-const icyStreamer = require('icy-streamer')
 const { Telegraf } = require('telegraf')
+const Streamer = require('./icy-stream')
 const elBot = require('./bot')
 
 const playlist = `${__dirname}/playlist.m3u`
@@ -16,26 +15,13 @@ const streamConfig = {
 
 const bot = new Telegraf(process.env.TELEGRAM_TOKEN)
 
-const liveStream = icyStreamer(streamConfig)
+const liveStream = new Streamer(streamConfig)
 elBot.setStream(liveStream)
 
-
-liveStream.nextSong = () => {
-  liveStream.Stream.kill('SIGUSR1')
-  console.log('[INFO]Skipping song')
-}
-
-const parseCommand = (ctx, cb) => {
-  ctx.params = ctx.update.message.text.split(' ')
-  cb(ctx)
-}
-
-bot.start(ctx => ctx.reply('Welcome, human. It is I, music bot player'))
-bot.on('text', _ctx => parseCommand(_ctx, ctx => {
-  const [command, ...params] = ctx.params
+bot.on('text', ctx => {
+  const [command, ...params] = ctx.update.message.text.split(' ')
   elBot.dispatchCommand(ctx, command, params)
-}))
+})
 
-liveStream.startStream()
 bot.launch()
-
+liveStream.startStream()
