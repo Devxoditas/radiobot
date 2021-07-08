@@ -1,8 +1,9 @@
 const { Telegraf } = require('telegraf')
 const Streamer = require('./icy-stream')
 const elBot = require('./bot')
+const _path = require('path')
 
-const playlist = `${__dirname}/playlist.m3u`
+const playlist = _path.resolve(__dirname, '../', 'playlist.m3u')
 
 const streamConfig = {
   url: process.env.ICE_URL,

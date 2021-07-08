@@ -4,14 +4,15 @@ const Url = require('url')
 const qs = require('querystring')
 const fs = require('fs')
 const metadater = require('./metadater')
+const _path = require('path')
 
-const directory = `${__dirname}/songs/`
+const directory = _path.join(__dirname, '../', 'songs/')
 
 const isCacheSong = id => {
   try {
     return fs.existsSync(`${directory}${id}`)
   } catch (err) {
-    console.eeror(err)
+    console.error(err)
     return false
   }
 }
@@ -19,6 +20,7 @@ const isCacheSong = id => {
 const getSong = async url => {
   let youtubeId = qs.parse(Url.parse(url).query).v
   if (!youtubeId) {
+    console.log('[INFO] no video id found, looking in youtube music')
     const songs = await ytMusic.searchMusics(url)
     if (!songs.length) {
       const errMsg = 'Error: could not find song'
@@ -35,6 +37,7 @@ const getSong = async url => {
   }
 
   const p = new Promise((resolve, reject) => {
+    console.log('[INFO] Downloading', youtubeId)
     const yt = new Ytmp3({
       outputPath: directory
     })

@@ -9,19 +9,16 @@ const commands = {
 
   '/addsong' (ctx, query) {
     const song = query.join(' ')
-    if(song) {
-      ctx.reply('Looking...')
-      downloader(song)
-        .then(filename => {
-          elBot.liveStream.addSong(filename)
-          ctx.reply('Song adquired and added to playlist')
-        })
-        .catch(response => {
-          ctx.reply(response)
-        })
-    } else {
-      ctx.reply("¯\_(ツ)_/¯ seriously?")
-    }
+    if (!song) return ctx.reply('¯\_(ツ)_/¯ seriously?')
+    ctx.reply('Looking...')
+    downloader(song)
+      .then(filename => {
+        elBot.liveStream.addSong(filename)
+        ctx.reply('Song adquired and added to playlist')
+      })
+      .catch(response => {
+        ctx.reply(response)
+      })
   },
   
   '/flush' (ctx, response = false) {

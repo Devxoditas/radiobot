@@ -1,16 +1,17 @@
 const xml2js = require('xml2js')
 const fs = require('fs')
 const { spawn, exec } = require('child_process')
+const _path = require('path')
 
 class Streamer {
   constructor (conf) {
-    this.xmlFile = `${__dirname}/ezstream-conf.xml`
+    this.xmlFile = _path.resolve(__dirname, '../', 'ezstream-conf.xml')
     const defaults = {
       url: 'http://localhost:8000/stream',
       sourceuser: 'source',
       format: 'MP3',
       sourcepassword: 'hackme',
-      filename: `${__dirname}/playlist.m3u`,
+      filename: _path.resolve(__dirname, '../', 'playlist.m3u'),
       svrinfoname: 'My Stream',
       svrinfourl: '',
       svrinfogenre: 'RockNRoll',
@@ -71,13 +72,13 @@ class Streamer {
     console.log('[INFO] Skipping song')
     await this.spyProcess()
     if (!this.pid) return
-    this.subProcess(`./killer.sh SIGUSR1 ${this.pid}`)
+    this.subProcess(`${__dirname}/killer.sh SIGUSR1 ${this.pid}`)
   }
   async flushPlayList () {
     console.log('[INFO] Flushing playlist')
     await this.spyProcess()
     if (!this.pid) return
-    this.subProcess(`./killer.sh SIGHUP ${this.pid}`)
+    this.subProcess(`${dirname}/killer.sh SIGHUP ${this.pid}`)
   }
   async killStream () {
     await this.spyProcess()
