@@ -13,6 +13,7 @@ Bot commands include `/skipsong`, `/addsong`, `/flush`, `/startstream` and `/sto
 - Youtube-dl
 - Icecast server credentials
 - Telegram bot credentials
+- ffprobe
 - Direnv
 
 ## Configuration

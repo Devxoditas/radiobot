@@ -8,14 +8,15 @@ const commands = {
     if (response) ctx.reply('Skipping')
   },
 
-  '/addsong' (ctx, query) {
+  async '/addsong' (ctx, query) {
     const song = query.join(' ')
     if (!song) return ctx.reply('¯\_(ツ)_/¯ seriously?')
-    ctx.reply('Looking...')
+    const { message_id: msgId } = await ctx.reply('Looking...')
     downloader(song)
       .then(filename => {
         elBot.liveStream.addSong(filename)
         ctx.reply('Song adquired and added to playlist')
+        ctx.deleteMessage(msgId)
       })
       .catch(response => {
         ctx.reply(response)
@@ -41,13 +42,16 @@ const commands = {
   },
 
   async '/queue' (ctx) {
-    ctx.reply(await queue())
+    const { message_id: msgId } = await ctx.reply('Hold on...')
+    await ctx.reply(await queue())
+    ctx.deleteMessage(msgId)
   },
 
   async '/nowplaying' (ctx) {
+    const { message_id: msgId } = await ctx.reply('Hold on...')
     ctx.reply(await queue(true))
+    ctx.deleteMessage(msgId)
   }
-
 }
 
 const elBot = {

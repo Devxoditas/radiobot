@@ -1,25 +1,51 @@
 const icy = require('icy')
-const mutag = require('mutag')
 const fs = require('fs')
 const _path = require('path')
 const metadater = require('./metadater')
+const { exec } = require('child_process')
 
 const songsPath = _path.join(__dirname, '../songs/')
 const playlist = _path.resolve(__dirname, '../playlist.m3u')
 
-const tagGetter = filePath => {
-  const file = fs.readFileSync(filePath)
+
+const mutag = filePath => {
+  return new Promise((resolve, reject) => {
+    exec(`ffprobe ${filePath}`, (err, stderr, stdout) => {
+      const lines = stdout.split('\n')
+        .map(line => line.trim())
+        .filter(line => line !== '')
+      const metadataLocation = lines.indexOf('Metadata:')
+      const metadata = lines.slice(metadataLocation, metadataLocation + 10)
+        .filter(line => 
+          line.includes('artist') || line.includes('title')
+        )
+        .map(line => line.split(':').map(itm => itm.trim()))
+        .map(line => {
+          const obj = {}
+          obj[line[0]] = line[1]
+          return obj
+        })
+        .reduce((acum, curr) => Object.assign(acum, curr), {})
+      if (!metadata.title) return reject()
+      resolve(metadata)
+    })
+  })
+}
+
+const tagGetter = async filePath => {
   const videoId = _path.basename(filePath, '.mp3')
-  return mutag.fetch(file)
+  return mutag(filePath)
     .catch(err => {
       console.log('[INFO] file does not have MP3 tags getting them', videoId)
       return metadater(filePath).then(result => {
         return tagGetter(filePath)
       })
     })
-    .then(({TPE1, TIT2}) => ({
-      id: videoId , Artist: TPE1, Title: TIT2
-    }))
+    .then(({title, artist}) => {
+      return {
+        id: videoId , artist, title
+      }
+    })
 }
 
 const nowPlaying = async _ => {
@@ -42,7 +68,7 @@ const queueMaker = async _ => {
   const np = await nowPlaying()
   const position = songList.map(({ id }) => id).indexOf(np)
   const queue = [...songList.slice(position), ...songList.slice(0, position)]
-    .map(({ Artist, Title }) => ({ Artist, Title }))
+    .map(({ artist, title }) => ({ artist, title }))
   return queue
 }
 
@@ -52,7 +78,7 @@ const queue = async (nowPlaying = false) => {
   if (!nowPlaying) trimmedQueue = orderedQueue.slice(1)
   trimmedQueue = trimmedQueue
     .map((song, index) => {
-      return `${index + 1} ${song.Title} - ${song.Artist}`
+      return `${index + 1} ${song.title} - ${song.artist}`
     })
   if (trimmedQueue.length > 10) {
     const trimmedQueue2 = trimmedQueue.slice(0, 10)
