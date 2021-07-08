@@ -12,7 +12,7 @@ const tagGetter = filePath => {
   const videoId = _path.basename(filePath, '.mp3')
   return mutag.fetch(file)
     .catch(err => {
-      console.log('[INFO] file does not have MP3 tags getting them')
+      console.log('[INFO] file does not have MP3 tags getting them', videoId)
       return metadater(filePath).then(result => {
         return tagGetter(filePath)
       })
