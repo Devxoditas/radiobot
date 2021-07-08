@@ -78,7 +78,7 @@ class Streamer {
     console.log('[INFO] Flushing playlist')
     await this.spyProcess()
     if (!this.pid) return
-    this.subProcess(`${dirname}/killer.sh SIGHUP ${this.pid}`)
+    this.subProcess(`${__dirname}/killer.sh SIGHUP ${this.pid}`)
   }
   async killStream () {
     await this.spyProcess()

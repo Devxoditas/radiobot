@@ -1,5 +1,6 @@
 const fs = require('fs')
 const downloader = require('./downloader')
+const { queue } = require('./playlist-manager')
 
 const commands = {
   '/skipsong' (ctx, response = false) {
@@ -37,6 +38,14 @@ const commands = {
     commands['/flush'](ctx, false)
     commands['/skipsong'](ctx, false)
     ctx.reply('Stopping stream')
+  },
+
+  async '/queue' (ctx) {
+    ctx.reply(await queue())
+  },
+
+  async '/nowplaying' (ctx) {
+    ctx.reply(await queue(true))
   }
 
 }
