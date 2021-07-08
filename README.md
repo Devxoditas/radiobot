@@ -6,7 +6,7 @@ icecast server.
 
 Songs are automatically added to playlist using youtube-dl
 
-Bot commands include `/help` `/skipsong`, `/addsong`, `/flush`, `/startstream` and `/stop`
+Bot commands include `/help`,`/skipsong`, `/addsong`, `/flush`, `/startstream` and `/stop`
 
 ## Requirements
 - Ezstream
