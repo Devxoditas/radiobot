@@ -6,7 +6,7 @@ icecast server.
 
 Songs are automatically added to playlist using youtube-dl
 
-Bot commands include `/skipsong`, `/addsong`, `/flush`, `/startstream` and `/stop`
+Bot commands include `/help`,`/skipsong`, `/addsong`, `/flush`, `/startstream` and `/stop`
 
 ## Requirements
 - Ezstream
@@ -41,3 +41,5 @@ To resume, you need to add new songs and send `/startstream`
 ## Skip song
 Send `/skipsong` to skip current song, if it is the last one, it will cicle to first one.
 
+## Help
+Sending `/help` shows the available commands and its usage

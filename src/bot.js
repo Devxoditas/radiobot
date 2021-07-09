@@ -22,7 +22,7 @@ const commands = {
         ctx.reply(response)
       })
   },
-  
+
   '/flush' (ctx, response = false) {
     if (response) ctx.reply('Flusing Playlist')
     elBot.liveStream.flushPlayList()
@@ -51,14 +51,28 @@ const commands = {
     const { message_id: msgId } = await ctx.reply('Hold on...')
     ctx.reply(await queue(true))
     ctx.deleteMessage(msgId)
+  },
+
+  '/help' (ctx) {
+    ctx.reply("Available commands:\n" +
+      "\n/help \nShows this message.\n" +
+      "\n/addsong nameOfTheSongORyoutubeURL \nAdds the song to the queue. " +
+      "If not found, returns a failure message.\n" +
+      "\n/skipsong \nPlays next song in queue.\n" +
+      "\n/nowplaying \nReturns the current song playing.\n" +
+      "\n/queue \nShows the next 10 songs information, plus the remaining"+
+      " songs on queue.\n" +
+      "\n/startstream \nTarts playing the songs in queue.\n" +
+      "\n/flush \nClears the playlist.\n" +
+      "\n/stop \nStops the music. Use wisely.\n")
   }
 }
 
 const elBot = {
-  setStream (liveStream) {
+  setStream(liveStream) {
     this.liveStream = liveStream
   },
-  dispatchCommand (ctx, command, params) {
+  dispatchCommand(ctx, command, params) {
     const cmd = command.toLowerCase()
     if (commands[cmd])
       return commands[cmd](ctx, params)
