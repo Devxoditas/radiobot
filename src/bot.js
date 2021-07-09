@@ -54,16 +54,17 @@ const commands = {
   },
 
   '/help' (ctx) {
-    ctx.reply(`Available commands:
-      **/help**  // shows this message.
-      **/addsong** __nameOfTheSongORyoutubeURL__  // adds the song to the queue. If not found, returns a failure message.
-      **/skipsong**  // plays next song in queue.
-      **/nowplaying**  // returns the current song playing.
-      **/queue**  // shows the next 10 songs information, plus the remaining songs on queue.
-      **/startstream**  //starts playing the songs in queue.
-      **/flush**  // clears the playlist.
-      **/stop**  // stops the music. Use wisely.
-  `)
+    ctx.reply("Available commands:\n" +
+      "\n/help \nShows this message.\n" +
+      "\n/addsong nameOfTheSongORyoutubeURL \nAdds the song to the queue. " +
+      "If not found, returns a failure message.\n" +
+      "\n/skipsong \nPlays next song in queue.\n" +
+      "\n/nowplaying \nReturns the current song playing.\n" +
+      "\n/queue \nShows the next 10 songs information, plus the remaining"+
+      " songs on queue.\n" +
+      "\n/startstream \nTarts playing the songs in queue.\n" +
+      "\n/flush \nClears the playlist.\n" +
+      "\n/stop \nStops the music. Use wisely.\n")
   }
 }
 
