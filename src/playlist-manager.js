@@ -4,19 +4,17 @@ const _path = require('path')
 const metadater = require('./metadater')
 const { exec } = require('child_process')
 
-const songsPath = _path.join(__dirname, '../songs/')
 const playlist = _path.resolve(__dirname, '../playlist.m3u')
-
 
 const mutag = filePath => {
   return new Promise((resolve, reject) => {
-    exec(`ffprobe ${filePath}`, (err, stderr, stdout) => {
+    exec(`ffprobe ${filePath}`, (_, stderr, stdout) => {
       const lines = stdout.split('\n')
         .map(line => line.trim())
         .filter(line => line !== '')
       const metadataLocation = lines.indexOf('Metadata:')
       const metadata = lines.slice(metadataLocation, metadataLocation + 10)
-        .filter(line => 
+        .filter(line =>
           line.includes('artist') || line.includes('title')
         )
         .map(line => line.split(':').map(itm => itm.trim()))
@@ -26,7 +24,7 @@ const mutag = filePath => {
           return obj
         })
         .reduce((acum, curr) => Object.assign(acum, curr), {})
-      if (!metadata.title) return reject()
+      if (!metadata.title) return reject(new Error('Error on FFProbe'))
       resolve(metadata)
     })
   })
@@ -35,15 +33,15 @@ const mutag = filePath => {
 const tagGetter = async filePath => {
   const videoId = _path.basename(filePath, '.mp3')
   return mutag(filePath)
-    .catch(err => {
+    .catch(_ => {
       console.log('[INFO] file does not have MP3 tags getting them', videoId)
       return metadater(filePath).then(result => {
         return tagGetter(filePath)
       })
     })
-    .then(({title, artist}) => {
+    .then(({ title, artist }) => {
       return {
-        id: videoId , artist, title
+        id: videoId, artist, title
       }
     })
 }
