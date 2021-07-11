@@ -2,15 +2,32 @@ const fs = require('fs')
 const downloader = require('./downloader')
 const { queue } = require('./playlist-manager')
 
+// 5 seconds
+const TIME_TO_DELETE_MESSAGE_AFTER_SENT = 5 * 1000
+
+const replyAndDelayedDelete = async (ctx, content) => {
+  // TODO: add a proper logger to avoid losing the history of calls
+  // maybe it could log the username and the message
+  const { message_id: messageId } = await ctx.reply(content)
+
+  setTimeout(() => {
+    // Delete original message
+    ctx.deleteMessage(messageId)
+
+    // Delete user command message
+    ctx.deleteMessage(ctx.update.message.message_id)
+  }, TIME_TO_DELETE_MESSAGE_AFTER_SENT)
+}
+
 const commands = {
   '/skipsong' (ctx, response = false) {
     elBot.liveStream.nextSong()
-    if (response) ctx.reply('Skipping')
+    if (response) replyAndDelayedDelete(ctx, 'Skipping')
   },
 
   async '/addsong' (ctx, query) {
     const song = query.join(' ')
-    if (!song) return ctx.reply('¯\_(ツ)_/¯ seriously?')
+    if (!song) return replyAndDelayedDelete(ctx, '¯\_(ツ)_/¯ seriously?')
     const { message_id: msgId } = await ctx.reply('Looking...')
     downloader(song)
       .then(filename => {
@@ -24,12 +41,12 @@ const commands = {
   },
 
   '/flush' (ctx, response = false) {
-    if (response) ctx.reply('Flusing Playlist')
+    if (response) replyAndDelayedDelete(ctx, 'Flusing Playlist')
     elBot.liveStream.flushPlayList()
   },
 
   '/startstream' (ctx) {
-    ctx.reply('Stream started')
+    replyAndDelayedDelete(ctx, 'Stream started')
     elBot.liveStream.startStream()
   },
 
@@ -38,7 +55,7 @@ const commands = {
     fs.writeFileSync(elBot.liveStream.configuration.filename, clearPl)
     commands['/flush'](ctx, false)
     commands['/skipsong'](ctx, false)
-    ctx.reply('Stopping stream')
+    replyAndDelayedDelete(ctx, 'Stopping stream')
   },
 
   async '/queue' (ctx) {
@@ -76,7 +93,7 @@ const elBot = {
     const cmd = command.toLowerCase()
     if (commands[cmd])
       return commands[cmd](ctx, params)
-    ctx.reply('What?')
+    replyAndDelayedDelete(ctx, 'What?')
   }
 }
 
