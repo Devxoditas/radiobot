@@ -18,7 +18,7 @@ const isCacheSong = id => {
 }
 
 const getSong = async url => {
-  let youtubeId = qs.parse(Url.parse(url).query).v
+  let youtubeId = qs.parse(new Url.URL(url).search)['?v']
   if (!youtubeId) {
     console.log('[INFO] no video id found, looking in youtube music')
     const songs = await ytMusic.searchMusics(url)
@@ -51,9 +51,9 @@ const getSong = async url => {
         resolve(`${directory}${songFn}`)
       })
     })
-    yt.on('error', _ => {
-      console.error(_)
-      reject('Cannot adquire song')
+    yt.on('error', error => {
+      console.error(error)
+      reject('Cannot adquire song') // eslint-disable-line
     })
   })
   return p

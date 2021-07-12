@@ -5,7 +5,6 @@ const path = require('path')
 const metadater = async file => {
   const fullPath = path.resolve(file)
   const videoId = path.basename(file, '.mp3')
-  const directory = path.dirname(fullPath)
   const info = await ytdl.getInfo(videoId, { quality: 'highestaudio' })
   const result = await new Promise(resolve => {
     ffmetadata.write(
