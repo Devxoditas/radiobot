@@ -25,7 +25,7 @@ const commands = {
     downloader(song, ctx)
       .then(filename => {
         elBot.liveStream.addSong(filename)
-        ctx.reply('Song adquired and added to playlist')
+        replyAndDelayedDelete(ctx, 'Song adquired and added to playlist')
       })
       .catch(response => {
         ctx.reply(response)
@@ -50,9 +50,9 @@ const commands = {
     replyAndDelayedDelete(ctx, 'Stopping stream')
   },
 
-  async '/queue' (ctx) {
+  async '/queue' (ctx, [page = 1]) {
     const { message_id: msgId, chat: { id: chatId } } = await ctx.reply('Hold on...')
-    ctx.telegram.editMessageText(chatId, msgId, undefined, await queue())
+    ctx.telegram.editMessageText(chatId, msgId, undefined, await queue(false, page))
   },
 
   async '/nowplaying' (ctx) {

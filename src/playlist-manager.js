@@ -70,17 +70,19 @@ const queueMaker = async _ => {
   return queue
 }
 
-const queue = async (nowPlaying = false) => {
+const queue = async (nowPlaying = false, page = 1) => {
   const orderedQueue = (await queueMaker())
   let trimmedQueue = orderedQueue.slice(0, 1)
   if (!nowPlaying) trimmedQueue = orderedQueue.slice(1)
   trimmedQueue = trimmedQueue
     .map((song, index) => {
-      return `${index + 1} ${song.title} - ${song.artist}`
+      return `${index + 1} - ${song.title} - ${song.artist}`
     })
   if (trimmedQueue.length > 10) {
-    const trimmedQueue2 = trimmedQueue.slice(0, 10)
-    trimmedQueue2.push(`+ ${trimmedQueue.length - 10} more songs`)
+    const initial = (page - 1) * 10
+    const end = page * 10
+    const trimmedQueue2 = trimmedQueue.slice(initial, end)
+    trimmedQueue2.push(`page ${page} of ${Math.ceil(trimmedQueue.length / 10)}`)
     trimmedQueue = trimmedQueue2
   }
   return trimmedQueue.join('\n')
