@@ -17,8 +17,13 @@ const isCacheSong = id => {
   }
 }
 
-const getSong = async url => {
-  let youtubeId = qs.parse(new Url.URL(url).search)['?v']
+const getSong = async (url, ctx = false) => {
+  let youtubeId = false
+  try {
+    youtubeId = qs.parse(new Url.URL(url).search)['?v']
+  } catch (_) {
+    // this catch is necesary
+  }
   if (!youtubeId) {
     console.log('[INFO] no video id found, looking in youtube music')
     const songs = await ytMusic.searchMusics(url)
@@ -36,6 +41,9 @@ const getSong = async url => {
     return Promise.resolve(`${directory}${songFn}`)
   }
 
+  let tmpMsg
+  if (ctx) tmpMsg = await ctx.reply('Looking...')
+
   const p = new Promise((resolve, reject) => {
     console.log('[INFO] Downloading', youtubeId)
     const yt = new Ytmp3({
@@ -48,12 +56,27 @@ const getSong = async url => {
         return reject(err)
       }
       metadater(`${directory}${songFn}`).then(_ => {
+        if (tmpMsg) {
+          const { message_id: msgId } = tmpMsg
+          ctx.deleteMessage(msgId)
+        }
         resolve(`${directory}${songFn}`)
       })
     })
     yt.on('error', error => {
       console.error(error)
       reject('Cannot adquire song') // eslint-disable-line
+    })
+    yt.on('progress', ({ progress }) => {
+      if (tmpMsg) {
+        const { message_id: msgId, chat: { id: chatId } } = tmpMsg
+        ctx.telegram.editMessageText(
+          chatId,
+          msgId,
+          undefined,
+          `Adquiring ${~~progress.percentage}%`
+        )
+      }
     })
   })
   return p

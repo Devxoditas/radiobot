@@ -22,12 +22,10 @@ const commands = {
   async '/addsong' (ctx, query) {
     const song = query.join(' ')
     if (!song) return replyAndDelayedDelete(ctx, '¯\\_(ツ)_/¯ seriously?')
-    const { message_id: msgId } = await ctx.reply('Looking...')
-    downloader(song)
+    downloader(song, ctx)
       .then(filename => {
         elBot.liveStream.addSong(filename)
         ctx.reply('Song adquired and added to playlist')
-        ctx.deleteMessage(msgId)
       })
       .catch(response => {
         ctx.reply(response)
