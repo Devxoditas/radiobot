@@ -2,21 +2,15 @@ const fs = require('fs')
 const downloader = require('./downloader')
 const { queue } = require('./playlist-manager')
 
-// 5 seconds
-const TIME_TO_DELETE_MESSAGE_AFTER_SENT = 5 * 1000
+const MESSAGE_TTL = 5 // in seconds
 
 const replyAndDelayedDelete = async (ctx, content) => {
-  // TODO: add a proper logger to avoid losing the history of calls
-  // maybe it could log the username and the message
-  const { message_id: messageId } = await ctx.reply(content)
-
+  const { update: { message: { message_id: userMessage } } } = ctx
+  const { message_id: botMessage } = await ctx.reply(content)
   setTimeout(() => {
-    // Delete original message
-    ctx.deleteMessage(messageId)
-
-    // Delete user command message
-    ctx.deleteMessage(ctx.update.message.message_id)
-  }, TIME_TO_DELETE_MESSAGE_AFTER_SENT)
+    ctx.deleteMessage(botMessage)
+    ctx.deleteMessage(userMessage)
+  }, MESSAGE_TTL * 1000)
 }
 
 const commands = {
@@ -59,15 +53,13 @@ const commands = {
   },
 
   async '/queue' (ctx) {
-    const { message_id: msgId } = await ctx.reply('Hold on...')
-    await ctx.reply(await queue())
-    ctx.deleteMessage(msgId)
+    const { message_id: msgId, chat: { id: chatId} } = await ctx.reply('Hold on...')
+    ctx.telegram.editMessageText(chatId, msgId, undefined, await queue())
   },
 
   async '/nowplaying' (ctx) {
-    const { message_id: msgId } = await ctx.reply('Hold on...')
-    ctx.reply(await queue(true))
-    ctx.deleteMessage(msgId)
+    const { message_id: msgId, chat: { id: chatId} } = await ctx.reply('Hold on...')
+    ctx.telegram.editMessageText(chatId, msgId, undefined, await queue(true))
   },
 
   '/help' (ctx) {
