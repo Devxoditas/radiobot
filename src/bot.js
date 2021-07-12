@@ -46,7 +46,7 @@ const commands = {
 
   '/stop' (ctx) {
     const clearPl = '#EXTM3U\n'
-    fs.writeFileSync(elBot.liveStream.configuration.filename, clearPl)
+    fs.writeFileSync(elBot.liveStream.conf.filename, clearPl)
     commands['/flush'](ctx, false)
     commands['/skipsong'](ctx, false)
     replyAndDelayedDelete(ctx, 'Stopping stream')
