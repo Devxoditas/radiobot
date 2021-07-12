@@ -6,7 +6,7 @@ const _path = require('path')
 class Streamer {
   constructor (conf) {
     this.xmlFile = _path.resolve(__dirname, '../', 'ezstream-conf.xml')
-    this.killerFile = _path.resolve(__dirname, '/killer.sh')
+    this.killerFile = _path.resolve(__dirname, 'killer.sh')
     const defaults = {
       url: 'http://localhost:8000/stream',
       sourceuser: 'source',
