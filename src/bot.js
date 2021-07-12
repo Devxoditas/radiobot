@@ -27,7 +27,7 @@ const commands = {
 
   async '/addsong' (ctx, query) {
     const song = query.join(' ')
-    if (!song) return replyAndDelayedDelete(ctx, '¯\_(ツ)_/¯ seriously?')
+    if (!song) return replyAndDelayedDelete(ctx, '¯\\_(ツ)_/¯ seriously?')
     const { message_id: msgId } = await ctx.reply('Looking...')
     downloader(song)
       .then(filename => {
@@ -71,28 +71,36 @@ const commands = {
   },
 
   '/help' (ctx) {
-    ctx.reply("Available commands:\n" +
-      "\n/help \nShows this message.\n" +
-      "\n/addsong nameOfTheSongORyoutubeURL \nAdds the song to the queue. " +
-      "If not found, returns a failure message.\n" +
-      "\n/skipsong \nPlays next song in queue.\n" +
-      "\n/nowplaying \nReturns the current song playing.\n" +
-      "\n/queue \nShows the next 10 songs information, plus the remaining"+
-      " songs on queue.\n" +
-      "\n/startstream \nTarts playing the songs in queue.\n" +
-      "\n/flush \nClears the playlist.\n" +
-      "\n/stop \nStops the music. Use wisely.\n")
+    const helpMsg = [
+      'Available commands:',
+      '\n/Help',
+      '  Shows this message.',
+      '/addsong nameOfTheSongOryoutubeURL',
+      '  Adds the song to the queue.',
+      '  If not found, returns a failure message.',
+      '/skipsong',
+      '  Plays next song in queue.',
+      '/nowplaying',
+      '  Returns the current song playing.',
+      '/queue',
+      '  Shows the next 10 songs information',
+      '  plus the remaining songs the queue.',
+      '/startstream',
+      '  Starts playing the songs in queue.',
+      '/stop',
+      '  Stops the music. Use wisely.'
+    ]
+    ctx.reply(helpMsg.join('\n'))
   }
 }
 
 const elBot = {
-  setStream(liveStream) {
+  setStream (liveStream) {
     this.liveStream = liveStream
   },
-  dispatchCommand(ctx, command, params) {
+  dispatchCommand (ctx, command, params) {
     const cmd = command.toLowerCase()
-    if (commands[cmd])
-      return commands[cmd](ctx, params)
+    if (commands[cmd]) return commands[cmd](ctx, params)
     replyAndDelayedDelete(ctx, 'What?')
   }
 }
