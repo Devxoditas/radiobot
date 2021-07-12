@@ -65,7 +65,7 @@ const commands = {
   '/help' (ctx) {
     const helpMsg = [
       'Available commands:',
-      '\n/Help',
+      '\n/help',
       '  Shows this message.',
       '/addsong nameOfTheSongOryoutubeURL',
       '  Adds the song to the queue.',
@@ -92,8 +92,13 @@ const elBot = {
   },
   dispatchCommand (ctx, command, params) {
     const cmd = command.toLowerCase()
-    if (commands[cmd]) return commands[cmd](ctx, params)
-    replyAndDelayedDelete(ctx, 'What?')
+    if (cmd[0] === '/') {
+      if (commands[cmd]) return commands[cmd](ctx, params)
+      replyAndDelayedDelete(ctx, 'What?')
+    }
+    const msg = `${cmd} ${params.join(' ')}`.split(' ').join('')
+    const pos = msg.toLowerCase().indexOf('softs')
+    if (pos !== -1) ctx.reply('OHQUELA')
   }
 }
 
