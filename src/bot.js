@@ -74,6 +74,8 @@ const commands = {
       '  If not found, returns a failure message.',
       '/skipsong',
       '  Plays next song in queue.',
+      '/skipto number',
+      '  Skips to desired song in queue',
       '/nowplaying',
       '  Returns the current song playing.',
       '/queue [page number]',
