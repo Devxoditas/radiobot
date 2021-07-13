@@ -1,10 +1,9 @@
-const fs = require('fs')
 const downloader = require('./downloader')
-const { queue } = require('./playlist-manager')
+const { queue, skipper } = require('./playlist-manager')
 
 const MESSAGE_TTL = 5 // in seconds
 
-const replyAndDelayedDelete = async (ctx, content) => {
+const replyAndDelayedDelete = ctx => async content => {
   const { update: { message: { message_id: userMessage } } } = ctx
   const { message_id: botMessage } = await ctx.reply(content)
   setTimeout(() => {
@@ -16,16 +15,24 @@ const replyAndDelayedDelete = async (ctx, content) => {
 const commands = {
   '/skipsong' (ctx, response = false) {
     elBot.liveStream.nextSong()
-    if (response) replyAndDelayedDelete(ctx, 'Skipping')
+    if (response) ctx.notifyMessage('Skipping')
+  },
+
+  async '/skipto' (ctx, [index]) {
+    if (!index || ~~index <= 0) return ctx.notifyMessage('Pa donde papaw?')
+    ctx.notifyMessage(`Skipping ${index} songs ahead`)
+    await skipper(index)
+    commands['/flush'](ctx, false)
+    commands['/skipsong'](ctx, false)
   },
 
   async '/addsong' (ctx, query) {
     const song = query.join(' ')
-    if (!song) return replyAndDelayedDelete(ctx, '¯\\_(ツ)_/¯ seriously?')
+    if (!song) return ctx.notifyMessage('¯\\_(ツ)_/¯ seriously?')
     downloader(song, ctx)
       .then(filename => {
         elBot.liveStream.addSong(filename)
-        replyAndDelayedDelete(ctx, 'Song adquired and added to playlist')
+        ctx.notifyMessage('Song adquired and added to playlist')
       })
       .catch(response => {
         ctx.reply(response)
@@ -33,21 +40,18 @@ const commands = {
   },
 
   '/flush' (ctx, response = false) {
-    if (response) replyAndDelayedDelete(ctx, 'Flusing Playlist')
+    if (response) ctx.notifyMessage('Flusing Playlist')
     elBot.liveStream.flushPlayList()
   },
 
   '/startstream' (ctx) {
-    replyAndDelayedDelete(ctx, 'Stream started')
+    ctx.notifyMessage('Stream started')
     elBot.liveStream.startStream()
   },
 
   '/stop' (ctx) {
-    const clearPl = '#EXTM3U\n'
-    fs.writeFileSync(elBot.liveStream.conf.filename, clearPl)
-    commands['/flush'](ctx, false)
-    commands['/skipsong'](ctx, false)
-    replyAndDelayedDelete(ctx, 'Stopping stream')
+    elBot.liveStream.killStream()
+    ctx.notifyMessage('Stopping stream')
   },
 
   async '/queue' (ctx, [page = 1]) {
@@ -88,10 +92,11 @@ const elBot = {
     this.liveStream = liveStream
   },
   dispatchCommand (ctx, command, params) {
+    ctx.notifyMessage = replyAndDelayedDelete(ctx)
     const cmd = command.toLowerCase()
     if (cmd[0] === '/') {
       if (commands[cmd]) return commands[cmd](ctx, params)
-      replyAndDelayedDelete(ctx, 'What?')
+      ctx.notifyMessage('What?')
     }
     const msg = `${cmd} ${params.join(' ')}`.split(' ').join('')
     const pos = msg.toLowerCase().indexOf('softs')

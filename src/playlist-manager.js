@@ -58,9 +58,14 @@ const nowPlaying = async _ => {
   return id
 }
 
-const queueMaker = async _ => {
+const plReader = _ => {
   const pl = fs.readFileSync(playlist, 'utf8')
   const [, ...songs] = pl.split('\n').filter(line => line !== '')
+  return songs
+}
+
+const queueMaker = async _ => {
+  const songs = plReader()
   const songsPromises = songs.map(tagGetter)
   const songList = await Promise.all(songsPromises)
   const np = await nowPlaying()
@@ -71,7 +76,7 @@ const queueMaker = async _ => {
 }
 
 const queue = async (nowPlaying = false, page = 1) => {
-  const orderedQueue = (await queueMaker())
+  const orderedQueue = await queueMaker()
   let trimmedQueue = orderedQueue.slice(0, 1)
   if (!nowPlaying) trimmedQueue = orderedQueue.slice(1)
   trimmedQueue = trimmedQueue
@@ -88,10 +93,29 @@ const queue = async (nowPlaying = false, page = 1) => {
   return trimmedQueue.join('\n')
 }
 
+const skipper = async skipSize => {
+  const songs = plReader()
+  const np = await nowPlaying()
+  console.log('now playing', np)
+  const position = songs
+    .map(song => _path.basename(song, '.mp3'))
+    .indexOf(np)
+  const newHead = position + skipSize
+  const newSongs = [songs[position], ...songs.slice(newHead), ...songs.slice(0, newHead)]
+  newSongs.unshift('#EXTM3U')
+  fs.writeFileSync(playlist, newSongs.join('\n'))
+  setTimeout(() => {
+    const trimmed = newSongs.slice(2)
+    trimmed.unshift('#EXTM3U')
+    fs.writeFileSync(playlist, trimmed.join('\n'))
+  }, 2000)
+}
+
 if (require.main === module) {
   queueMaker().then(console.log)
 } else {
   module.exports = {
-    queue
+    queue,
+    skipper
   }
 }
