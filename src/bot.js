@@ -86,6 +86,14 @@ const commands = {
       '  Stops the music. Use wisely.'
     ]
     ctx.reply(helpMsg.join('\n'))
+  },
+
+  '/link' (ctx) {
+    const linkMessage = [
+      'DEVxoditas: http://clients2.zentenoit.com:8000/devxoditas',
+      'Guaracha: http://clients2.zentenoit.com:8000/guaracha'
+    ]
+    ctx.notifyMessage(linkMessage.join('\n'))
   }
 }
 
