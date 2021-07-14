@@ -3,8 +3,10 @@ const fs = require('fs')
 const _path = require('path')
 const metadater = require('./metadater')
 const { exec } = require('child_process')
+const Brain = require('./brain')
 
 const playlist = _path.resolve(__dirname, '../playlist.m3u')
+const brain = new Brain()
 
 const mutag = filePath => {
   return new Promise((resolve, reject) => {
@@ -65,6 +67,9 @@ const plReader = _ => {
 }
 
 const queueMaker = async _ => {
+  const brainQueue = brain.get('queue')
+  if (brainQueue) return brainQueue
+  console.log('[INFO] populating brain queue')
   const songs = plReader()
   const songsPromises = songs.map(tagGetter)
   const songList = await Promise.all(songsPromises)
@@ -72,6 +77,7 @@ const queueMaker = async _ => {
   const position = songList.map(({ id }) => id).indexOf(np)
   const queue = [...songList.slice(position), ...songList.slice(0, position)]
     .map(({ artist, title }) => ({ artist, title }))
+  brain.set('queue', queue)
   return queue
 }
 
