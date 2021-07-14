@@ -84,6 +84,8 @@ const commands = {
       '  Starts playing the songs in queue.',
       '/stop',
       '  Stops the music. Use wisely.'
+       '/link',
+      '  Returns the urls of the radio station.'
     ]
     ctx.reply(helpMsg.join('\n'))
   },
