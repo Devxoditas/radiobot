@@ -83,7 +83,9 @@ const commands = {
       '/startstream',
       '  Starts playing the songs in queue.',
       '/stop',
-      '  Stops the music. Use wisely.'
+      '  Stops the music. Use wisely.',
+      '/link',
+      '  Shows URL to Radio Music'
     ]
     ctx.reply(helpMsg.join('\n'))
   },
