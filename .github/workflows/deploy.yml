@@ -17,7 +17,7 @@ jobs:
       - name: Update Code
         shell: bash
         working-directory: /home/pi/radiobot
-        run: git pull upstream main
+        run: git pull origin main
       - name: Move Listeners to DRP
         shell: bash
         working-directory: /home/pi/radiobot
