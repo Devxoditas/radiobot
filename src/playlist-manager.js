@@ -32,13 +32,18 @@ const mutag = filePath => {
   })
 }
 
-const tagGetter = async filePath => {
+const tagGetter = async (filePath, tries = 0) => {
   const videoId = _path.basename(filePath, '.mp3')
-  return mutag(filePath)
+  const song = brain.get(`songs.${videoId}`)
+  if (song) return song
+  if (!fs.existsSync(filePath) || tries > 0) {
+    return { id: videoId, error: true }
+  }
+  const songData = await mutag(filePath)
     .catch(_ => {
       console.log('[INFO] file does not have MP3 tags getting them', videoId)
       return metadater(filePath).then(result => {
-        return tagGetter(filePath)
+        return tagGetter(filePath, tries + 1)
       })
     })
     .then(({ title, artist }) => {
@@ -46,6 +51,8 @@ const tagGetter = async filePath => {
         id: videoId, artist, title
       }
     })
+  brain.set(`songs.${videoId}`, songData)
+  return songData
 }
 
 const nowPlaying = async _ => {
@@ -66,18 +73,29 @@ const plReader = _ => {
   return songs
 }
 
-const queueMaker = async _ => {
-  const brainQueue = brain.get('queue')
-  if (brainQueue) return brainQueue
-  console.log('[INFO] populating brain queue')
+const playlistCleaner = async _ => {
   const songs = plReader()
-  const songsPromises = songs.map(tagGetter)
-  const songList = await Promise.all(songsPromises)
+  const undupedSongs = [...new Set(songs)]
+  const memorySongs = brain.getAll('songs')
+  const newPl = undupedSongs.filter(song => {
+    const id = _path.basename(song, '.mp3')
+    return memorySongs.find(song => song.id === id)
+  })
+  newPl.unshift('#EXTM3U')
+  fs.writeFileSync(playlist, newPl.join('\n'))
+}
+
+const queueMaker = async _ => {
+  const songs = plReader()
+  const songsPromises = songs.map(song => tagGetter(song))
+  const songList = (await Promise.all(songsPromises))
+    .filter(({ error }) => !error)
+  playlistCleaner()
   const np = await nowPlaying()
-  const position = songList.map(({ id }) => id).indexOf(np)
+  const position = songList
+    .map(({ id }) => id).indexOf(np)
   const queue = [...songList.slice(position), ...songList.slice(0, position)]
     .map(({ artist, title }) => ({ artist, title }))
-  brain.set('queue', queue)
   return queue
 }
 
