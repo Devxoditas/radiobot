@@ -17,6 +17,14 @@ const isCacheSong = id => {
   }
 }
 
+const deleteTmpMsg = (tmpMsg, ctx) => {
+  if (tmpMsg) {
+    const { message_id: msgId } = tmpMsg
+    ctx.deleteMessage(msgId)
+  }
+  return null
+}
+
 const getSong = async (url, ctx = false) => {
   let youtubeId = false
   try {
@@ -49,32 +57,41 @@ const getSong = async (url, ctx = false) => {
     const yt = new Ytmp3({
       outputPath: directory
     })
+    const reporter = {
+      value: -10,
+      time: new Date().getTime(),
+      ttl: 5000
+    }
     yt.download(youtubeId, songFn)
     yt.on('finished', (err, response) => {
       if (err) {
         console.error(err)
+        tmpMsg = deleteTmpMsg(tmpMsg, ctx)
         return reject(err)
       }
       metadater(`${directory}${songFn}`).then(_ => {
-        if (tmpMsg) {
-          const { message_id: msgId } = tmpMsg
-          ctx.deleteMessage(msgId)
-        }
+        tmpMsg = deleteTmpMsg(tmpMsg, ctx)
         resolve(`${directory}${songFn}`)
       })
     })
     yt.on('error', error => {
+      tmpMsg = deleteTmpMsg(tmpMsg, ctx)
       console.error(error)
       reject('Cannot adquire song') // eslint-disable-line
     })
     yt.on('progress', ({ progress }) => {
       if (tmpMsg) {
         const { message_id: msgId, chat: { id: chatId } } = tmpMsg
+        const now = new Date().getTime()
+        const process = ~~(~~progress.percentage / 5) * 5
+        if (reporter.value === process) return
+        if (now - reporter.time < reporter.ttl) return
+        reporter.value = process
         ctx.telegram.editMessageText(
           chatId,
           msgId,
           undefined,
-          `Adquiring ${~~progress.percentage}%`
+          `Adquiring ${reporter.value}%`
         )
       }
     })
