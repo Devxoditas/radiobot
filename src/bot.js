@@ -67,18 +67,18 @@ const commands = {
   '/help' (ctx) {
     const helpMsg = [
       'Available commands:',
-      '\n/help',
+      '\n/help|/h',
       '  Shows this message.',
       '/addsong nameOfTheSongOryoutubeURL',
       '  Adds the song to the queue.',
       '  If not found, returns a failure message.',
-      '/skipsong',
+      '/skipsong|/s',
       '  Plays next song in queue.',
       '/skipto number',
       '  Skips to desired song in queue',
       '/nowplaying',
       '  Returns the current song playing.',
-      '/queue [page number]',
+      '/queue|/q [page number]',
       '  Shows the q\'ed songs paginated',
       '/startstream',
       '  Starts playing the songs in queue.',
@@ -96,6 +96,16 @@ const commands = {
       'Guaracha: http://clients2.zentenoit.com:8000/guaracha'
     ]
     ctx.notifyMessage(linkMessage.join('\n'))
+  },
+
+  '/s' (ctx, response) {
+    return this['/skipsong'](ctx, response)
+  },
+  '/q' (ctx, response) {
+    return this['/queue'](ctx, response)
+  },
+  '/h' (ctx, response) {
+    return this['/help'](ctx, response)
   }
 }
 

@@ -72,7 +72,7 @@ class Streamer {
   }
 
   addSong (filename) {
-    fs.appendFileSync(this.conf.filename, filename + '\n')
+    fs.appendFileSync(this.conf.filename, '\n' + filename)
     if (this.Stream) this.flushPlayList()
   }
 
