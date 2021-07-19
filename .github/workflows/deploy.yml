@@ -1,0 +1,38 @@
+name: Deploy content
+on:
+  push:
+    branches: [main]
+jobs:
+  build:
+    runs-on: self-hosted
+    env:
+      HOST: ${{secrets.ADMIN_HOST}}
+      PASSWD: ${{secrets.ADMIN_PWD}}
+      USER: ${{secrets.ADMIN_USER}}
+      ORIGIN: ${{secrets.ORIGIN}}
+      DEST: ${{secrets.DESTINATION}}
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v2
+      - name: Update Code
+        shell: bash
+        working-directory: /home/pi/radiobot
+        run: git pull origin main
+      - name: Move Listeners to DRP
+        shell: bash
+        working-directory: /home/pi/radiobot
+        run: |
+          /usr/bin/curl -s -I -X GET "http://${USER}:${PASSWD}@${HOST}/admin/moveclients.xsl?mount=/${ORIGIN}&destination=/${DEST}" && sleep 2
+      - name: Restart Service
+        shell: bash
+        working-directory: /home/pi/radiobot
+        run: |
+          /usr/bin/sudo systemctl restart radiobot && sleep 3
+      - name: Back Listeners
+        shell: bash
+        env:
+          BACK: ${{secrets.BACK}}
+        working-directory: /home/pi/radiobot
+        run: |
+          /usr/bin/curl -s -I -X GET "http://${USER}:${PASSWD}@${HOST}/admin/moveclients.xsl?mount=/${DEST}&destination=/${ORIGIN}" && sleep 2
+      - run: echo "🍏 This job's status is ${{ job.status }}."
