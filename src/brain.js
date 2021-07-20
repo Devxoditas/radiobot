@@ -14,12 +14,12 @@ class Brain {
 
   get (key) {
     const data = this.memory[key]
-    if (!data) return false
+    if (!data) return undefined
     if (
       !data.expirable ||
       data.validUntil > new Date().getTime()
     ) return data.value
-    return false
+    return undefined
   }
 
   getAll (subsection) {
