@@ -144,11 +144,25 @@ const skipper = async skipSize => {
   }, 2000)
 }
 
+const deleter = async index => {
+  const songs = plReader()
+  const np = await nowPlaying()
+  console.log('now playing', np)
+  const position = songs
+    .map(song => _path.basename(song, '.mp3'))
+    .indexOf(np)
+  if (position < 0) return
+  const indexToKill = position + ~~index
+  const newSongs = songs.filter((_, position) => indexToKill !== position)
+  fs.writeFileSync(playlist, newSongs.join('\n'))
+}
+
 if (require.main === module) {
   queueMaker().then(console.log)
 } else {
   module.exports = {
     queue,
-    skipper
+    skipper,
+    deleter
   }
 }
