@@ -42,4 +42,4 @@ jobs:
         with:
           eslint: true
           prettier: false
-          github_token: ${ TOKEN }
+          github_token: ${TOKEN}
