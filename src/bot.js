@@ -1,5 +1,5 @@
 const downloader = require('./downloader')
-const { queue, skipper } = require('./playlist-manager')
+const { queue, skipper, deleter } = require('./playlist-manager')
 
 const MESSAGE_TTL = 5 // in seconds
 
@@ -21,9 +21,16 @@ const commands = {
   async '/skipto' (ctx, [index]) {
     if (!index || ~~index <= 0) return ctx.notifyMessage('Pa donde papaw?')
     ctx.notifyMessage(`Skipping ${index} songs ahead`)
-    await skipper(index)
+    await skipper(~~index)
     commands['/flush'](ctx, false)
     commands['/skipsong'](ctx, false)
+  },
+
+  async '/deletesong' (ctx, [index]) {
+    if (!index || ~~index <= 0) return ctx.notifyMessage('Cuál papaw?')
+    ctx.notifyMessage('Deleting song from playlist')
+    await deleter(~~index)
+    commands['/flush'](ctx, false)
   },
 
   async '/addsong' (ctx, query) {
@@ -72,11 +79,14 @@ const commands = {
       '/addsong nameOfTheSongOryoutubeURL',
       '  Adds the song to the queue.',
       '  If not found, returns a failure message.',
+      '/deletesong number',
+      '  Deletes one song from the playlist',
+      '  under the provided index',
       '/skipsong|/s',
       '  Plays next song in queue.',
       '/skipto number',
       '  Skips to desired song in queue',
-      '/nowplaying',
+      '/nowplaying|/np',
       '  Returns the current song playing.',
       '/queue|/q [page number]',
       '  Shows the q\'ed songs paginated',
@@ -106,6 +116,9 @@ const commands = {
   },
   '/h' (ctx, response) {
     return this['/help'](ctx, response)
+  },
+  '/np' (ctx, response) {
+    return this['/nowplaying'](ctx, response)
   }
 }
 
