@@ -37,7 +37,7 @@ const tagGetter = async (filePath, tries = 0) => {
   const song = brain.get(`songs.${videoId}`)
   if (song) return song
   if (!fs.existsSync(filePath) || tries > 0) {
-    return { id: videoId, error: true }
+    return { id: videoId, artist: 'Unknown', title: videoId, error: true }
   }
   const songData = await mutag(filePath)
     .catch(_ => {
@@ -57,8 +57,17 @@ const tagGetter = async (filePath, tries = 0) => {
 
 const nowPlaying = async _ => {
   const id = await new Promise(resolve => {
+    let expired
+    setTimeout(() => {
+      if (expired) return
+      console.log('[INFO] Could not get now playing info')
+      expired = true
+      return resolve(null)
+    }, 5000)
     icy.get(process.env.ICE_URL, response => {
       response.on('metadata', async metadata => {
+        if (expired) return
+        expired = true
         const { StreamTitle: id } = icy.parse(metadata)
         resolve(id)
       })
@@ -92,8 +101,8 @@ const queueMaker = async _ => {
     .filter(({ error }) => !error)
   playlistCleaner()
   const np = await nowPlaying()
-  const position = songList
-    .map(({ id }) => id).indexOf(np)
+  let position = songList.map(({ id }) => id).indexOf(np)
+  position = position < 0 ? 0 : position
   const queue = [...songList.slice(position), ...songList.slice(0, position)]
     .map(({ artist, title }) => ({ artist, title }))
   return queue
@@ -124,7 +133,7 @@ const skipper = async skipSize => {
   const position = songs
     .map(song => _path.basename(song, '.mp3'))
     .indexOf(np)
-  const newHead = position + skipSize
+  const newHead = position + ~~skipSize
   const newSongs = [songs[position], ...songs.slice(newHead), ...songs.slice(0, newHead)]
   newSongs.unshift('#EXTM3U')
   fs.writeFileSync(playlist, newSongs.join('\n'))
