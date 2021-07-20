@@ -43,3 +43,4 @@ Send `/skipsong` to skip current song, if it is the last one, it will cicle to f
 
 ## Help
 Sending `/help` shows the available commands and its usage
+
