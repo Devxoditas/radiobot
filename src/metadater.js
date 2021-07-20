@@ -24,9 +24,4 @@ const metadater = async file => {
   console.log('[INFO] Metadata process', result)
 }
 
-if (require.main === module) {
-  const [,, song] = process.argv
-  metadater(song)
-} else {
-  module.exports = metadater
-}
+module.exports = metadater
