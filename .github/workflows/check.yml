@@ -37,9 +37,7 @@ jobs:
 
       - name: Run linters
         uses: wearerequired/lint-action@v1
-        env:
-          TOKEN: ${{ secrets.AUTH }}
         with:
           eslint: true
           prettier: false
-          github_token: ${TOKEN}
+          github_token: ${{secrets.AUTH}}
