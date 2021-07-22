@@ -116,6 +116,7 @@ const queue = async (nowPlaying = false, page = 1) => {
     .map((song, index) => {
       return `${index + 1} - ${song.title} - ${song.artist}`
     })
+  if (nowPlaying) trimmedQueue[0] = trimmedQueue[0].replace('1 -', '▶')
   if (trimmedQueue.length > 10) {
     const initial = (page - 1) * 10
     const end = page * 10

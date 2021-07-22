@@ -85,6 +85,15 @@ const commands = {
     const original = await ctx.reply('Hold on...')
     const message = await queue(true)
     ctx.editAndNotify(original, message)
+    ctx.setChatTitle(`DEVxoditas ${message}`)
+  },
+
+  '/link' (ctx) {
+    const linkMessage = [
+      'DEVxoditas: http://clients2.zentenoit.com:8000/devxoditas',
+      'Guaracha: http://clients2.zentenoit.com:8000/guaracha'
+    ]
+    ctx.notifyMessage(linkMessage.join('\n'))
   },
 
   '/help' (ctx) {
@@ -116,14 +125,6 @@ const commands = {
     ctx.reply(helpMsg.join('\n'))
   },
 
-  '/link' (ctx) {
-    const linkMessage = [
-      'DEVxoditas: http://clients2.zentenoit.com:8000/devxoditas',
-      'Guaracha: http://clients2.zentenoit.com:8000/guaracha'
-    ]
-    ctx.notifyMessage(linkMessage.join('\n'))
-  },
-
   '/s' (ctx, response) {
     return this['/skipsong'](ctx, response)
   },
@@ -145,7 +146,8 @@ const elBot = {
   dispatchCommand (ctx, command, params) {
     ctx.notifyMessage = replyAndDelayedDelete(ctx)
     ctx.editAndNotify = notifyAndDelayedDelete(ctx)
-    const cmd = command.toLowerCase()
+    const botUsername = ctx.botInfo.username.toLowerCase()
+    const cmd = command.toLowerCase().replace(`@${botUsername}`, '')
     if (cmd[0] === '/') {
       if (commands[cmd]) return commands[cmd](ctx, params)
       ctx.notifyMessage('What?')
