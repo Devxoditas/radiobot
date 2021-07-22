@@ -3,12 +3,26 @@ const { queue, skipper, deleter } = require('./playlist-manager')
 
 const MESSAGE_TTL = 5 // in seconds
 
+const delayedDelete = (ctx, ids) => {
+  ids.forEach(id => {
+    ctx.deleteMessage(id)
+  })
+}
+
 const replyAndDelayedDelete = ctx => async content => {
   const { update: { message: { message_id: userMessage } } } = ctx
   const { message_id: botMessage } = await ctx.reply(content)
   setTimeout(() => {
-    ctx.deleteMessage(botMessage)
-    ctx.deleteMessage(userMessage)
+    delayedDelete(ctx, [botMessage, userMessage])
+  }, MESSAGE_TTL * 1000)
+}
+
+const notifyAndDelayedDelete = ctx => async (original, replacement) => {
+  const { message_id: msgId, chat: { id: chatId } } = original
+  const { update: { message: { message_id: userMessage } } } = ctx
+  ctx.telegram.editMessageText(chatId, msgId, undefined, replacement)
+  setTimeout(() => {
+    delayedDelete(ctx, [msgId, userMessage])
   }, MESSAGE_TTL * 1000)
 }
 
@@ -62,13 +76,15 @@ const commands = {
   },
 
   async '/queue' (ctx, [page = 1]) {
-    const { message_id: msgId, chat: { id: chatId } } = await ctx.reply('Hold on...')
-    ctx.telegram.editMessageText(chatId, msgId, undefined, await queue(false, page))
+    const original = await ctx.reply('Hold on...')
+    const message = await queue(false, page)
+    ctx.editAndNotify(original, message)
   },
 
   async '/nowplaying' (ctx) {
-    const { message_id: msgId, chat: { id: chatId } } = await ctx.reply('Hold on...')
-    ctx.telegram.editMessageText(chatId, msgId, undefined, await queue(true))
+    const original = await ctx.reply('Hold on...')
+    const message = await queue(true)
+    ctx.editAndNotify(original, message)
   },
 
   '/help' (ctx) {
@@ -128,6 +144,7 @@ const elBot = {
   },
   dispatchCommand (ctx, command, params) {
     ctx.notifyMessage = replyAndDelayedDelete(ctx)
+    ctx.editAndNotify = notifyAndDelayedDelete(ctx)
     const cmd = command.toLowerCase()
     if (cmd[0] === '/') {
       if (commands[cmd]) return commands[cmd](ctx, params)
