@@ -1,7 +1,9 @@
 const downloader = require('./downloader')
-const { queue, skipper, deleter } = require('./playlist-manager')
+const { queue, skipper, deleter, getSongAt } = require('./playlist-manager')
 
 const MESSAGE_TTL = 5 // in seconds
+const TITLE_UPDATE_TTL = 60 // in seconds
+let lastInteraction = 0
 
 const delayedDelete = (ctx, ids) => {
   ids.forEach(id => {
@@ -24,6 +26,14 @@ const notifyAndDelayedDelete = ctx => async (original, replacement) => {
   setTimeout(() => {
     delayedDelete(ctx, [msgId, userMessage])
   }, MESSAGE_TTL * 1000)
+}
+
+const tryUpdateTitle = async ctx => {
+  const now = new Date().getTime()
+  if (now - lastInteraction < TITLE_UPDATE_TTL * 1000) return
+  lastInteraction = now
+  const message = await queue(true)
+  ctx.setChatTitle(`DEVxoditas ${message}`)
 }
 
 const commands = {
@@ -96,6 +106,16 @@ const commands = {
     ctx.notifyMessage(linkMessage.join('\n'))
   },
 
+  async '/getsong' (ctx, [index]) {
+    if (!index || ~~index <= 0) return ctx.notifyMessage('Cuál papaw?')
+    ctx.notifyMessage('Shhh')
+    const song = await getSongAt(~~index)
+    const { message_id: msgId } = await ctx.replyWithAudio({ source: song })
+    setTimeout(() => {
+      delayedDelete(ctx, [msgId])
+    }, 10000)
+  },
+
   '/help' (ctx) {
     const helpMsg = [
       'Available commands:',
@@ -144,6 +164,7 @@ const elBot = {
     this.liveStream = liveStream
   },
   dispatchCommand (ctx, command, params) {
+    tryUpdateTitle(ctx)
     ctx.notifyMessage = replyAndDelayedDelete(ctx)
     ctx.editAndNotify = notifyAndDelayedDelete(ctx)
     const botUsername = ctx.botInfo.username.toLowerCase()
