@@ -2,8 +2,8 @@ const downloader = require('./downloader')
 const { queue, skipper, deleter, getSongAt } = require('./playlist-manager')
 
 const MESSAGE_TTL = 5 // in seconds
-const TITLE_UPDATE_TTL = 60 // in seconds
-const COPYRIGHT_TTL = 60 * 10 // in seconds
+const TITLE_UPDATE_TTL = 10 // in seconds
+const COPYRIGHT_TTL = 60 // in seconds
 let lastInteraction = 0
 
 const delayedDelete = (ctx, ids) => {
@@ -29,12 +29,13 @@ const notifyAndDelayedDelete = ctx => async (original, replacement) => {
   }, MESSAGE_TTL * 1000)
 }
 
-const tryUpdateTitle = async ctx => {
+const tryUpdateTitle = async (ctx, force = false) => {
   const now = new Date().getTime()
+  lastInteraction = force ? 0 : lastInteraction
   if (now - lastInteraction < TITLE_UPDATE_TTL * 1000) return
   lastInteraction = now
   const message = await queue(true)
-  ctx.setChatTitle(`DEVxoditas ${message}`)
+  await ctx.setChatTitle(`DEVxoditas ${message}`)
 }
 
 const commands = {
@@ -96,7 +97,7 @@ const commands = {
     const original = await ctx.reply('Hold on...')
     const message = await queue(true)
     ctx.editAndNotify(original, message)
-    ctx.setChatTitle(`DEVxoditas ${message}`)
+    tryUpdateTitle(ctx, true)
   },
 
   '/link' (ctx) {

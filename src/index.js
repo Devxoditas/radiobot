@@ -19,6 +19,12 @@ const bot = new Telegraf(process.env.TELEGRAM_TOKEN)
 const liveStream = new Streamer(streamConfig)
 elBot.setStream(liveStream)
 
+bot.use(async (ctx, next) => {
+  const { update: { message: { message_id: id, new_chat_title: title } } } = ctx
+  if (title) ctx.deleteMessage(id)
+  next()
+})
+
 bot.on('text', ctx => {
   const [command, ...params] = ctx.update.message.text.split(' ')
   elBot.dispatchCommand(ctx, command, params)
