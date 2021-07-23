@@ -3,6 +3,7 @@ const { queue, skipper, deleter, getSongAt } = require('./playlist-manager')
 
 const MESSAGE_TTL = 5 // in seconds
 const TITLE_UPDATE_TTL = 60 // in seconds
+const COPYRIGHT_TTL = 60 * 10 // in seconds
 let lastInteraction = 0
 
 const delayedDelete = (ctx, ids) => {
@@ -113,7 +114,7 @@ const commands = {
     const { message_id: msgId } = await ctx.replyWithAudio({ source: song })
     setTimeout(() => {
       delayedDelete(ctx, [msgId])
-    }, 10000)
+    }, COPYRIGHT_TTL * 1000)
   },
 
   '/help' (ctx) {
