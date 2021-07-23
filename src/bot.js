@@ -1,15 +1,39 @@
 const downloader = require('./downloader')
-const { queue, skipper, deleter } = require('./playlist-manager')
+const { queue, skipper, deleter, getSongAt } = require('./playlist-manager')
 
 const MESSAGE_TTL = 5 // in seconds
+const TITLE_UPDATE_TTL = 60 // in seconds
+let lastInteraction = 0
+
+const delayedDelete = (ctx, ids) => {
+  ids.forEach(id => {
+    ctx.deleteMessage(id)
+  })
+}
 
 const replyAndDelayedDelete = ctx => async content => {
   const { update: { message: { message_id: userMessage } } } = ctx
   const { message_id: botMessage } = await ctx.reply(content)
   setTimeout(() => {
-    ctx.deleteMessage(botMessage)
-    ctx.deleteMessage(userMessage)
+    delayedDelete(ctx, [botMessage, userMessage])
   }, MESSAGE_TTL * 1000)
+}
+
+const notifyAndDelayedDelete = ctx => async (original, replacement) => {
+  const { message_id: msgId, chat: { id: chatId } } = original
+  const { update: { message: { message_id: userMessage } } } = ctx
+  ctx.telegram.editMessageText(chatId, msgId, undefined, replacement)
+  setTimeout(() => {
+    delayedDelete(ctx, [msgId, userMessage])
+  }, MESSAGE_TTL * 1000)
+}
+
+const tryUpdateTitle = async ctx => {
+  const now = new Date().getTime()
+  if (now - lastInteraction < TITLE_UPDATE_TTL * 1000) return
+  lastInteraction = now
+  const message = await queue(true)
+  ctx.setChatTitle(`DEVxoditas ${message}`)
 }
 
 const commands = {
@@ -62,13 +86,34 @@ const commands = {
   },
 
   async '/queue' (ctx, [page = 1]) {
-    const { message_id: msgId, chat: { id: chatId } } = await ctx.reply('Hold on...')
-    ctx.telegram.editMessageText(chatId, msgId, undefined, await queue(false, page))
+    const original = await ctx.reply('Hold on...')
+    const message = await queue(false, page)
+    ctx.editAndNotify(original, message)
   },
 
   async '/nowplaying' (ctx) {
-    const { message_id: msgId, chat: { id: chatId } } = await ctx.reply('Hold on...')
-    ctx.telegram.editMessageText(chatId, msgId, undefined, await queue(true))
+    const original = await ctx.reply('Hold on...')
+    const message = await queue(true)
+    ctx.editAndNotify(original, message)
+    ctx.setChatTitle(`DEVxoditas ${message}`)
+  },
+
+  '/link' (ctx) {
+    const linkMessage = [
+      'DEVxoditas: http://clients2.zentenoit.com:8000/devxoditas',
+      'Guaracha: http://clients2.zentenoit.com:8000/guaracha'
+    ]
+    ctx.notifyMessage(linkMessage.join('\n'))
+  },
+
+  async '/getsong' (ctx, [index]) {
+    if (!index || ~~index <= 0) return ctx.notifyMessage('Cuál papaw?')
+    ctx.notifyMessage('Shhh')
+    const song = await getSongAt(~~index)
+    const { message_id: msgId } = await ctx.replyWithAudio({ source: song })
+    setTimeout(() => {
+      delayedDelete(ctx, [msgId])
+    }, 10000)
   },
 
   '/help' (ctx) {
@@ -100,14 +145,6 @@ const commands = {
     ctx.reply(helpMsg.join('\n'))
   },
 
-  '/link' (ctx) {
-    const linkMessage = [
-      'DEVxoditas: http://clients2.zentenoit.com:8000/devxoditas',
-      'Guaracha: http://clients2.zentenoit.com:8000/guaracha'
-    ]
-    ctx.notifyMessage(linkMessage.join('\n'))
-  },
-
   '/s' (ctx, response) {
     return this['/skipsong'](ctx, response)
   },
@@ -127,8 +164,11 @@ const elBot = {
     this.liveStream = liveStream
   },
   dispatchCommand (ctx, command, params) {
+    tryUpdateTitle(ctx)
     ctx.notifyMessage = replyAndDelayedDelete(ctx)
-    const cmd = command.toLowerCase()
+    ctx.editAndNotify = notifyAndDelayedDelete(ctx)
+    const botUsername = ctx.botInfo.username.toLowerCase()
+    const cmd = command.toLowerCase().replace(`@${botUsername}`, '')
     if (cmd[0] === '/') {
       if (commands[cmd]) return commands[cmd](ctx, params)
       ctx.notifyMessage('What?')

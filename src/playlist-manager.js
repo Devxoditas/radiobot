@@ -116,6 +116,7 @@ const queue = async (nowPlaying = false, page = 1) => {
     .map((song, index) => {
       return `${index + 1} - ${song.title} - ${song.artist}`
     })
+  if (nowPlaying) trimmedQueue[0] = trimmedQueue[0].replace('1 -', '▶')
   if (trimmedQueue.length > 10) {
     const initial = (page - 1) * 10
     const end = page * 10
@@ -129,7 +130,6 @@ const queue = async (nowPlaying = false, page = 1) => {
 const skipper = async skipSize => {
   const songs = plReader()
   const np = await nowPlaying()
-  console.log('now playing', np)
   const position = songs
     .map(song => _path.basename(song, '.mp3'))
     .indexOf(np)
@@ -147,7 +147,6 @@ const skipper = async skipSize => {
 const deleter = async index => {
   const songs = plReader()
   const np = await nowPlaying()
-  console.log('now playing', np)
   const position = songs
     .map(song => _path.basename(song, '.mp3'))
     .indexOf(np)
@@ -157,12 +156,25 @@ const deleter = async index => {
   fs.writeFileSync(playlist, newSongs.join('\n'))
 }
 
+const getSongAt = async index => {
+  const songs = plReader()
+  const np = await nowPlaying()
+  const position = songs
+    .map(song => _path.basename(song, '.mp3'))
+    .indexOf(np)
+  if (position < 0) return
+  const definedIndex = position + ~~index
+  const song = songs.filter((_, position) => definedIndex === position)[0]
+  return fs.readFileSync(song)
+}
+
 if (require.main === module) {
   queueMaker().then(console.log)
 } else {
   module.exports = {
     queue,
     skipper,
-    deleter
+    deleter,
+    getSongAt
   }
 }
