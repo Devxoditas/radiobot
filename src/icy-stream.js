@@ -35,7 +35,7 @@ class Streamer {
 
   log (callback, type = 'data') {
     return data => {
-      console.log('[INFO]', type, data.toString())
+      console.log(`[INFO] ${type} ${data.toString()}`)
       callback(data.toString())
     }
   }

@@ -1,3 +1,4 @@
+const logger = require('./logger.js')
 const { Telegraf } = require('telegraf')
 const Streamer = require('./icy-stream')
 const elBot = require('./bot')
@@ -31,4 +32,5 @@ bot.on('text', ctx => {
 })
 
 bot.launch()
+logger(bot)
 liveStream.startStream()
