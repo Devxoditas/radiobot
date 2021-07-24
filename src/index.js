@@ -21,8 +21,12 @@ const liveStream = new Streamer(streamConfig)
 elBot.setStream(liveStream)
 
 bot.use(async (ctx, next) => {
-  const { update: { message: { message_id: id, new_chat_title: title } } } = ctx
-  if (title) ctx.deleteMessage(id)
+  try {
+    const { update: { message: { message_id: id, new_chat_title: title } } } = ctx
+    if (title) ctx.deleteMessage(id)
+  } catch (e) {
+    // catch must exists
+  }
   next()
 })
 
