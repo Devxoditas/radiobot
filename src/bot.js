@@ -37,7 +37,7 @@ const tryUpdateTitle = async (ctx, force = false) => {
   const message = await queue(true)
   return ctx.setChatTitle(`DEVxoditas ${message}`)
     .catch(_err => {
-      console.error('[ERROR] Cannot update title')
+      // console.error('[ERROR] Cannot update title')
     })
 }
 
