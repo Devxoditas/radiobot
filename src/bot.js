@@ -35,7 +35,10 @@ const tryUpdateTitle = async (ctx, force = false) => {
   if (now - lastInteraction < TITLE_UPDATE_TTL * 1000) return
   lastInteraction = now
   const message = await queue(true)
-  await ctx.setChatTitle(`DEVxoditas ${message}`)
+  return ctx.setChatTitle(`DEVxoditas ${message}`)
+    .catch(_err => {
+      console.error('[ERROR] Cannot update title')
+    })
 }
 
 const commands = {
