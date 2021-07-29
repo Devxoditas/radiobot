@@ -22,6 +22,8 @@ const parseData = async body => {
       .tabRenderer.content.sectionListRenderer.contents[0]
       .musicShelfRenderer.contents
   } catch (e) {
+    console.error('[ERROR] content structure is wrong')
+    console.log(body)
     return []
   }
   return contents
@@ -63,6 +65,8 @@ const post = query => {
       })
     })
     req.on('error', e => {
+      console.error(`ERROR, ${e}`)
+      resolve([])
       console.log(e)
     })
     req.write(data)
