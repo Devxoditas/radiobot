@@ -1,10 +1,10 @@
-const ytMusic = require('node-youtube-music').default
 const Ytmp3 = require('youtube-mp3-downloader')
 const Url = require('url')
 const qs = require('querystring')
 const fs = require('fs')
-const metadater = require('./metadater')
 const _path = require('path')
+const metadater = require('./metadater')
+const ytMusic = require('./searchSongs')
 
 const directory = _path.join(__dirname, '../', 'songs/')
 
@@ -34,13 +34,13 @@ const getSong = async (url, ctx = false) => {
   }
   if (!youtubeId) {
     console.log('[INFO] no video id found, looking in youtube music')
-    const songs = await ytMusic.searchMusics(url)
+    const songs = await ytMusic(url)
     if (!songs.length) {
       const errMsg = 'Error: could not find song'
       console.error(errMsg)
       return Promise.reject(errMsg)
     }
-    youtubeId = songs[0].youtubeId
+    youtubeId = songs[0]
   }
 
   const songFn = `${youtubeId}.mp3`
