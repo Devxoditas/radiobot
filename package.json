@@ -13,7 +13,7 @@
     "ffmetadata": "^1.7.0",
     "icy": "^2.1.0",
     "telegraf": "^4.4.0",
-    "xml2js": "^0.5.0",
+    "xml2js": "^0.6.1",
     "youtube-mp3-downloader": "^0.7.7"
   },
   "peerDependencies": {
