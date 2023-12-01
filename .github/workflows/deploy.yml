@@ -35,4 +35,4 @@ jobs:
         working-directory: /home/pi/radiobot
         run: |
           /usr/bin/curl -s -I -X GET "http://${USER}:${PASSWD}@${HOST}/admin/moveclients.xsl?mount=/${DEST}&destination=/${ORIGIN}" && sleep 2
-      - run: echo "🍏 This job's status is ${{ job.status }}."
+      - run: echo "::set-output name={name}::🍏 This job's status is ${{ job.status }}."
