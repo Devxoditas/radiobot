@@ -59,7 +59,7 @@ const post = query => {
       resp.on('data', chunk => {
         chunks.push(chunk)
       })
-      resp.on('end', data => {
+      resp.on('end', () => {
         const result = JSON.parse(chunks.join(''))
         resolve(parseData(result))
       })
