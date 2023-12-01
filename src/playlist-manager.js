@@ -40,9 +40,9 @@ const tagGetter = async (filePath, tries = 0) => {
     return { id: videoId, artist: 'Unknown', title: videoId, error: true }
   }
   const songData = await mutag(filePath)
-    .catch(_ => {
+    .catch(() => {
       console.log('[INFO] file does not have MP3 tags getting them', videoId)
-      return metadater(filePath).then(result => {
+      return metadater(filePath).then(() => {
         return tagGetter(filePath, tries + 1)
       })
     })
@@ -55,7 +55,7 @@ const tagGetter = async (filePath, tries = 0) => {
   return songData
 }
 
-const nowPlaying = async _ => {
+const nowPlaying = async () => {
   const id = await new Promise(resolve => {
     let expired
     setTimeout(() => {
@@ -76,13 +76,13 @@ const nowPlaying = async _ => {
   return id
 }
 
-const plReader = _ => {
+const plReader = () => {
   const pl = fs.readFileSync(playlist, 'utf8')
   const [, ...songs] = pl.split('\n').filter(line => line !== '')
   return songs
 }
 
-const playlistCleaner = async _ => {
+const playlistCleaner = async () => {
   const songs = plReader()
   const undupedSongs = [...new Set(songs)]
   const memorySongs = brain.getAll('songs')
@@ -94,7 +94,7 @@ const playlistCleaner = async _ => {
   fs.writeFileSync(playlist, newPl.join('\n'))
 }
 
-const queueMaker = async _ => {
+const queueMaker = async () => {
   const songs = plReader()
   const songsPromises = songs.map(song => tagGetter(song))
   const songList = (await Promise.all(songsPromises))
