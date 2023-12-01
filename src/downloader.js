@@ -69,10 +69,11 @@ const getSong = async (url, ctx = false) => {
         tmpMsg = deleteTmpMsg(tmpMsg, ctx)
         return reject(err)
       }
-      metadater(`${directory}${songFn}`).then(_ => {
+      metadater(`${directory}${songFn}`).then(() => {
         tmpMsg = deleteTmpMsg(tmpMsg, ctx)
         resolve(`${directory}${songFn}`)
       })
+      return response
     })
     yt.on('error', error => {
       tmpMsg = deleteTmpMsg(tmpMsg, ctx)
