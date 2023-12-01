@@ -40,3 +40,4 @@ jobs:
         with:
           eslint: true
           prettier: false
+      - run: echo "::set-output name={name}::🍏 This job's status is ${{ job.status }}."
