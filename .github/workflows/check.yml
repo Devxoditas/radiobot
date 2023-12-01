@@ -38,3 +38,4 @@ jobs:
         with:
           eslint: true
           prettier: false
+      - run: echo "{name}=name::🍏 This job's status is ${{ job.status }}." >> $GITHUB_OUTPUT
